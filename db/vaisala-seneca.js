@@ -1,15 +1,15 @@
 "use strict"
 
-var ready = false;
-var seneca = require('seneca')();
+let ready = false;
+const seneca = require('seneca')();
 
 seneca.use(require('seneca-basic')).use(require('seneca-entity'));
 
 seneca.add('role:entities,cmd:save', (msg, respond) => {
     let entity = seneca.make$('entity');
     let dt = new Date();
-    entity.dt = dt.getUTCFullYear().toFixed(2) + dt.getUTCMonth().toFixed(2) + dt.getUTCDate().toFixed(2) + 
-        dt.getUTCHours().toFixed(2) + dt.getUTCMinutes().toFixed(2) + dt.getUTCSeconds().toFixed(2);  
+    entity.dt = dt.getUTCFullYear() + pad0(dt.getUTCMonth()) + pad0(dt.getUTCDate()) + 
+        pad0(dt.getUTCHours()) + pad0(dt.getUTCMinutes()) + pad0(dt.getUTCSeconds());  
     entity.data = msg.data;
     entity.save$((err, ent) => {
         respond(err, { value: ent.id });
@@ -17,18 +17,19 @@ seneca.add('role:entities,cmd:save', (msg, respond) => {
 });
 
 seneca.add('role:entities,cmd:load', (msg, respond) => {
-    console.log(msg.id);
     seneca.make$('entity').load$(msg.id, (err, ent) => {
         respond(err, { value: ent });
     })    
 });
 
 seneca.add('role:entities,cmd:list', (msg, respond) => {
-    respond();
+    seneca.make$('entity').list$({}, (err, list) => {
+        respond(err, { value: list });
+    })    
 });
 
 seneca.add('role:entities,cmd:ready', (msg, respond) => {
-    respond();
+    respond(null, { value: ready });
 });
 
 seneca.ready((err) => {
@@ -45,19 +46,34 @@ let checkerId = setInterval(() => {
         let ent_id;
         clearInterval(checkerId); 
 
-        seneca.act('role:entities,cmd:save', (err, respond) => {
+        seneca.act('role:entities,cmd:ready', (err, respond) => {
             if (err) console.log(err);
-            else {
-                ent_id = respond.value;
+            else console.log("Respond ready: " + respond.value);
+        });                
 
-                seneca.act('role:entities,cmd:load', { id: ent_id }, (err, respond) => {
-                    if (err) console.log(err);
-                    else console.log("Respond2: " + respond.value);
-                });                
-            }
-        });
+        for (let i = 0; i < 10; i++) {
+            seneca.act('role:entities,cmd:save', (err, respond) => {
+                if (err) console.log(err);
+                else { 
+                    console.log("Respond save: " + respond.value);
+                    if (i == 9) {
+                        seneca.act('role:entities,cmd:list', (err, respond) => {
+                            if (err) console.log(err);
+                            else {
+                                let list = respond.value;
+                                list.forEach( (ent) => { console.log(ent.data$(false)); } );
+                            }
+                        });
+                    }                                   
+                }
+            });                
+        }
     }
 }, 100);
 
+const pad0 = (value) => {
+    if (value < 10) return '0' + value;
+    return value;
+}
 
 
