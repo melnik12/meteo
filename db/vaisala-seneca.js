@@ -3,7 +3,13 @@
 let ready = false;
 const seneca = require('seneca')();
 
-seneca.use(require('seneca-basic')).use(require('seneca-entity'));
+console.log(seneca.version);
+
+seneca
+    .use(require('seneca-entity'))
+    .use(require('seneca-basic'))
+    //.use(require('seneca-jsonfile-store'), { folder: 'D:\\' });
+    .use('mongo-store', { name:'meteo', host:'ds063186.mlab.com', port:63186 })
 
 seneca.add('role:entities,cmd:save', (msg, respond) => {
     seneca
@@ -20,7 +26,7 @@ seneca.add('role:entities,cmd:load', (msg, respond) => {
 });
 
 seneca.add('role:entities,cmd:list', (msg, respond) => {
-    seneca.make$('entity').list$({}, respond);
+    seneca.make$('entity').list$({dt: '20160920130107'}, respond);
 });
 
 seneca.add('role:entities,cmd:ready', (msg, respond) => {
