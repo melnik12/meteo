@@ -9,7 +9,8 @@ seneca
     .use(require('seneca-entity'))
     .use(require('seneca-basic'))
     //.use(require('seneca-jsonfile-store'), { folder: 'D:\\' });
-    .use('mongo-store', { name:'meteo', host:'ds063186.mlab.com', port:63186 })
+    //.use('mongo-store', { name:'meteo', host:'ds063186.mlab.com', port:63186, user: 'dbuser', passowrd: 'dbuser' })
+    .use('seneca-mongo-store', { uri: ' mongodb://dbuser:dbpassword@ds063186.mlab.com:63186/meteo' });
 
 seneca.add('role:entities,cmd:save', (msg, respond) => {
     seneca
