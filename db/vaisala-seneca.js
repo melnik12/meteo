@@ -2,15 +2,18 @@
 
 let ready = false;
 const seneca = require('seneca')();
+const mongostore = require('seneca-mongo-store');
+//const cache = require('module');
 
 console.log(seneca.version);
+console.log(Object.keys(module.loaded));
 
 seneca
     .use(require('seneca-entity'))
     .use(require('seneca-basic'))
     //.use(require('seneca-jsonfile-store'), { folder: 'D:\\' });
     //.use('mongo-store', { name:'meteo', host:'ds063186.mlab.com', port:63186, user: 'dbuser', passowrd: 'dbuser' })
-    .use('seneca-mongo-store', { uri: ' mongodb://dbuser:dbpassword@ds063186.mlab.com:63186/meteo' });
+    .use(mongostore, { uri: ' mongodb://dbuser:dbuser@ds063186.mlab.com:63186/meteo', options: {} });
 
 seneca.add('role:entities,cmd:save', (msg, respond) => {
     seneca
@@ -48,6 +51,8 @@ let checkerId = setInterval(() => {
         let ent_id;
         clearInterval(checkerId); 
 
+
+        /*
         seneca.act('role:entities,cmd:ready', (err, respond) => {
             if (err) console.log(err);
             else console.log("Respond ready: ", respond.value);
@@ -72,7 +77,8 @@ let checkerId = setInterval(() => {
                     }                                   
                 }
             });                
-        }
+        }*/
+
     }
 }, 100);
 
